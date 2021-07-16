@@ -1,0 +1,9 @@
+{
+    "defaultPin": 7,
+    "portPinMap": [
+        {
+            "port": "/dev/ttyS0",
+            "pin": 10
+        }
+    ]
+}
