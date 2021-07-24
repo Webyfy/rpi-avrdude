@@ -5,4 +5,5 @@ go 1.16
 require (
 	github.com/kataras/golog v0.1.7
 	github.com/spf13/viper v1.8.1
+	go.bug.st/serial v1.3.1 // indirect
 )

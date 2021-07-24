@@ -3,12 +3,9 @@ package main
 import (
 	"flag"
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
-	"time"
 
-	"git.reach-iot.com/iot-master/rpi-avrdude/gpio"
 	"github.com/kataras/golog"
 )
 
@@ -34,19 +31,15 @@ func main() {
 	golog.Info(originalExec)
 
 	// Blink
-	pin := gpio.NewDigitalPin(resetPin)
-	if err := pin.Export(); err != nil {
-		log.Fatal(err)
+	isUSB, err := isUSBConverter("/dev/ttyAMA0")
+	if err != nil {
+		golog.Fatal(err)
 	}
-	defer pin.Unexport()
-	pin.Direction(gpio.OUT)
-	for i := 0; i < 30; i++ {
-		pin.Write(gpio.HIGH)
-		time.Sleep(time.Second)
-		pin.Write(gpio.LOW)
-		time.Sleep(time.Second)
+	if isUSB {
+		golog.Info("Just run avrdude-original")
+	} else {
+		golog.Info("Monitor avrdude-original and reset using GPIO pin")
 	}
-
 }
 
 func getOwnDir() string {

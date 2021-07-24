@@ -1,9 +1,9 @@
 {
     "defaultPin": 7,
-    "portPinMap": [
+    "ports": [
         {
-            "port": "/dev/ttyS0",
-            "pin": 10
+            "name": "/dev/ttyS0",
+            "resetPin": 10
         }
     ]
 }

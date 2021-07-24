@@ -10,15 +10,14 @@ import (
 
 // Config represents application configuration
 type Config struct {
-	DefaultPin int          `json:"defaultPin"`
-	PortPinMap []PortPinMap `json:"portPinMap"`
+	DefaultPin int    `json:"defaultPin"`
+	Ports      []Port `json:"ports"`
 }
 
-// PortPinMap represents mapping from a serial port
-// to its corresponding reset pin
-type PortPinMap struct {
-	Port string `json:"port"`
-	Pin  int    `json:"pin"`
+// Name defines a port and its reset Pin
+type Port struct {
+	Name     string `json:"name"`
+	ResetPin int    `json:"resetPin"`
 }
 
 // loadConfiguration loads configuration file and converts it into Config type
