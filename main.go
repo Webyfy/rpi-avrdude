@@ -1,51 +1,70 @@
 package main
 
 import (
-	"flag"
-	"fmt"
+	"log"
 	"os"
 	"path/filepath"
-
-	"github.com/kataras/golog"
+	"strings"
 )
 
 const (
-	OriginalFile = "avrdude-original"
-	resetPin     = 23
+	originalExecName = "avrdude-original"
+	configFilename   = "config.json"
+)
+
+const (
+	resetPin = 23
 )
 
 func main() {
-	var configFile string
-	flag.StringVar(&configFile, "config", "config.json", "Path to configuration file")
-	flag.Parse()
+	ownDir := getOwnDir()
+	configFile := filepath.Join(ownDir, configFilename)
+	originalExec := filepath.Join(ownDir, originalExecName)
+	log.Println(originalExec)
 
 	var err error
 	config, err := loadConfiguration(configFile)
 	if err != nil {
-		golog.Fatal("Failed to load configuration file: %w", err)
+		log.Fatal("Failed to load configuration file: %w", err)
 	}
-	golog.Info("Config:", fmt.Sprintf("%+v", config))
+	log.Printf("Config:%+v", config)
 
-	ownDir := getOwnDir()
-	originalExec := filepath.Join(ownDir, OriginalFile)
-	golog.Info(originalExec)
-
-	// Blink
-	isUSB, err := isUSBConverter("/dev/ttyAMA0")
-	if err != nil {
-		golog.Fatal(err)
+	serialPort := getPort()
+	if serialPort == "" {
+		log.Fatal("Serial port not specified")
 	}
-	if isUSB {
-		golog.Info("Just run avrdude-original")
+	isGpioUart, err := isGpioUart(serialPort)
+	if err != nil && err != errPortNotFound { // let avrdude-original handle missing port
+		log.Fatal(err)
+	}
+	if isGpioUart {
+		log.Println("GPIO UART detected. Running in GPIO reset mode")
 	} else {
-		golog.Info("Monitor avrdude-original and reset using GPIO pin")
+		log.Println("Not GPIO UART. Running in normal mode")
+		normalRun(originalExec, os.Args[1:])
 	}
+}
+
+func getPort() string {
+	var serailPort string
+	// flag.StringVar(&serailPort, "P", "", "Destination Serial Port")
+	// flag.Parse()
+	if serailPort == "" {
+		for _, arg := range os.Args[1:] {
+			if strings.HasPrefix(arg, "-P") {
+				serailPort = arg[2:]
+				break
+			}
+		}
+	}
+
+	return serailPort
 }
 
 func getOwnDir() string {
 	exec, err := os.Executable()
 	if err != nil {
-		golog.Fatal(err)
+		log.Fatal(err)
 	}
 	return filepath.Dir(exec)
 }

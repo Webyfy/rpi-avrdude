@@ -1,11 +1,8 @@
 package main
 
 import (
+	"encoding/json"
 	"os"
-	"path/filepath"
-	"strings"
-
-	"github.com/spf13/viper"
 )
 
 // Config represents application configuration
@@ -21,29 +18,14 @@ type Port struct {
 }
 
 // loadConfiguration loads configuration file and converts it into Config type
-func loadConfiguration(configFile string) (Config, error) {
+func loadConfiguration(file string) (Config, error) {
 	var config Config
-
-	if filepath.IsAbs(configFile) {
-		viper.SetConfigFile(configFile)
-	} else {
-		ex, err := os.Executable()
-		if err != nil {
-			return config, err
-		}
-		exPath := filepath.Dir(ex)
-		viper.SetConfigName(strings.TrimSuffix(filepath.Base(configFile), filepath.Ext(configFile)))
-		viper.AddConfigPath(filepath.Dir(configFile))
-		viper.AddConfigPath(exPath)
-	}
-
-	if err := viper.ReadInConfig(); err != nil {
-		return config, err
-	}
-	err := viper.Unmarshal(&config)
+	configFile, err := os.Open(file)
 	if err != nil {
 		return config, err
 	}
-
+	defer configFile.Close()
+	jsonParser := json.NewDecoder(configFile)
+	jsonParser.Decode(&config)
 	return config, nil
 }
