@@ -1,11 +1,12 @@
 package main
 
 import (
-	"flag"
 	"log"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/pborman/getopt/v2"
 )
 
 const (
@@ -53,8 +54,8 @@ func main() {
 // from command line arguments
 func getPort() string {
 	var serailPort string
-	flag.StringVar(&serailPort, "P", "", "Destination Serial Port")
-	flag.Parse()
+	getopt.Flag(&serailPort, 'P', "", "Destination Serial Port")
+	_ = getopt.Getopt(nil)
 
 	if serailPort == "" {
 		for _, arg := range os.Args[1:] {
