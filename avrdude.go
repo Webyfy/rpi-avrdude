@@ -1,45 +1,108 @@
 package main
 
 import (
+	"bufio"
+	"io"
+	"log"
 	"os"
 	"os/exec"
+	"regexp"
 	"time"
 
 	"git.reach-iot.com/iot-master/rpi-avrdude/gpio"
 )
 
-func normalRun(exe string, args []string) {
-	cmd := exec.Command(exe, args...)
+const (
+	dtrRequestPattern = `.+TIOCM_DTR.+`
+	exitStatusPattern = `.+exited with.+`
+	pin               = 18
+)
+
+type avrdudeProxy struct {
+	orignalExec string
+	args        []string
+	resetPin    int
+}
+
+func (a avrdudeProxy) normalRun() {
+	cmd := exec.Command(a.orignalExec, a.args...)
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stdout
+	cmd.Stderr = os.Stderr
 	cmd.Run()
 }
 
-func straceRun(exe string, args []string) {
+func (a avrdudeProxy) gpioResetRun() {
+	cmdArgs := []string{"-eioctl", a.orignalExec}
+	cmdArgs = append(cmdArgs, a.args...)
+	cmd := exec.Command("strace", cmdArgs...)
+	cmd.Stdout = os.Stdout
+	cmd.Stdin = os.Stdin
 
+	cmdReader, err := cmd.StderrPipe()
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer cmdReader.Close()
+
+	cmd.Start()
+	err = a.watchOutput(cmdReader)
+	if err != nil {
+		if cmd.Process != nil {
+			cmd.Process.Kill()
+		}
+		log.Fatal(err)
+	}
+	cmd.Wait()
 }
 
-func reset(pin int) error {
-	digitalPin := gpio.NewDigitalPin(pin)
-	err := digitalPin.Export()
+func (a avrdudeProxy) watchOutput(cmdReader io.Reader) error {
+	// regex
+	dtrRegex, err := regexp.Compile(dtrRequestPattern)
 	if err != nil {
 		return err
 	}
-	defer digitalPin.Unexport()
-
-	if err := digitalPin.Direction(gpio.OUT); err != nil {
+	exitRegex, err := regexp.Compile(exitStatusPattern)
+	if err != nil {
 		return err
 	}
-	if err := digitalPin.Write(gpio.LOW); err != nil {
+
+	pin := 18
+	scanner := bufio.NewScanner(cmdReader)
+	done := false
+	for scanner.Scan() {
+		line := scanner.Bytes()
+		if dtrRegex.Match(line) {
+			if !done {
+				log.Println("avrdude-original: Using autoreset DTR on GPIO Pin ", pin)
+				a.reset()
+				done = true
+			}
+		} else if exitRegex.Match(line) {
+			log.Println(string(line))
+		}
+	}
+
+	return nil
+}
+
+func (a avrdudeProxy) reset() error {
+	pin := gpio.NewDigitalPin(a.resetPin)
+	if err := pin.Export(); err != nil {
+		return err
+	}
+	defer pin.Unexport()
+
+	if err := pin.Direction(gpio.OUT); err != nil {
+		return err
+	}
+	if err := pin.Write(gpio.LOW); err != nil {
 		return err
 	}
 	time.Sleep(time.Millisecond * 250)
-	if err := digitalPin.Write(gpio.HIGH); err != nil {
-		return err
+	if err := pin.Write(gpio.HIGH); err != nil {
+		time.Sleep(time.Millisecond * 50)
 	}
-	time.Sleep(time.Millisecond * 50)
 
 	return nil
-
 }

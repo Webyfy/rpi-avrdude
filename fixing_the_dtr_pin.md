@@ -4,7 +4,7 @@
 
 If you were ever curious, you might look into avrdude’s source code to see how it sends the data to the arduino. There’s really nothing too fancy – it just sends the data from the hex file in a serial stream of data. However, there it has code to fire the DTR pin briefly before sending the data. This pin typically connects to a capacitor which connects to the reset pin on your arduino. Bouncing the pin would usually reboot the arduino, but it also announces to the optiboot system to use the D0 and D1 pins as serial RX/TX briefly to receive commands from somewhere else. During this short time, you can emit the hex code that will run on the optiboot system.
 
-If you peek into the source, you’ll see something that looks like this:
+If you peek into the [source](https://github.com/andygock/avrdude-arduino/blob/37e1f67e6622a676a3866f8acd6a9618551941ca/stk500v2.c#L1319), you’ll see something that looks like this:
 
 ```c
 /* Clear DTR and RTS to unload the RESET capacitor 

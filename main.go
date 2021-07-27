@@ -28,6 +28,10 @@ func main() {
 		log.Fatal("Failed to load configuration file: %w", err)
 	}
 	log.Printf("Config:%+v", config)
+	avrdudeproxy := avrdudeProxy{
+		orignalExec: originalExec,
+		args:        os.Args[1:],
+	}
 
 	serialPort := getPort()
 	if serialPort == "" {
@@ -39,9 +43,11 @@ func main() {
 	}
 	if isGpioUart {
 		log.Println("GPIO UART detected. Running in GPIO reset mode")
+		avrdudeproxy.resetPin = resetPin
+		avrdudeproxy.gpioResetRun()
 	} else {
 		log.Println("Not GPIO UART. Running in normal mode")
-		normalRun(originalExec, os.Args[1:])
+		avrdudeproxy.normalRun()
 	}
 }
 
