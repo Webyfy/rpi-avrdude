@@ -17,12 +17,15 @@ const (
 	exitStatusPattern = `.+exited with.+`
 )
 
+// avrdudeProxy runs original avrdude in both normal mode
+// as well as GPIO reset mode
 type avrdudeProxy struct {
 	orignalExec string
 	args        []string
 	resetPin    int
 }
 
+// normalRun runs original avrdude executable without any modification
 func (a avrdudeProxy) normalRun() {
 	cmd := exec.Command(a.orignalExec, a.args...)
 	cmd.Stdin = os.Stdin
@@ -31,6 +34,7 @@ func (a avrdudeProxy) normalRun() {
 	cmd.Run()
 }
 
+// gpioResetRun runs original avrdude executable with strace
 func (a avrdudeProxy) gpioResetRun() {
 	cmdArgs := []string{"-eioctl", a.orignalExec}
 	cmdArgs = append(cmdArgs, a.args...)
@@ -55,6 +59,8 @@ func (a avrdudeProxy) gpioResetRun() {
 	cmd.Wait()
 }
 
+// watchOutput reads strace output and resets arduino
+// via GPIO pin on DTR trigger system call
 func (a avrdudeProxy) watchOutput(cmdReader io.Reader) error {
 	// regex
 	dtrRegex, err := regexp.Compile(dtrRequestPattern)
@@ -84,6 +90,8 @@ func (a avrdudeProxy) watchOutput(cmdReader io.Reader) error {
 	return nil
 }
 
+// reset resets microcontroller via GPIO pin
+// timings were copied from https://github.com/andygock/avrdude-arduino/blob/37e1f67e6622a676a3866f8acd6a9618551941ca/stk500v2.c#L1319
 func (a avrdudeProxy) reset() error {
 	pin := gpio.NewDigitalPin(a.resetPin)
 	if err := pin.Export(); err != nil {

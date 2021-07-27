@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"log"
 	"os"
 	"path/filepath"
@@ -48,10 +49,13 @@ func main() {
 	}
 }
 
+// getPort parses serial port to which the sketch is being uploaded
+// from command line arguments
 func getPort() string {
 	var serailPort string
-	// flag.StringVar(&serailPort, "P", "", "Destination Serial Port")
-	// flag.Parse()
+	flag.StringVar(&serailPort, "P", "", "Destination Serial Port")
+	flag.Parse()
+
 	if serailPort == "" {
 		for _, arg := range os.Args[1:] {
 			if strings.HasPrefix(arg, "-P") {
@@ -64,6 +68,7 @@ func getPort() string {
 	return serailPort
 }
 
+// getOwnDir finds the directory in which this binary is residing
 func getOwnDir() string {
 	exec, err := os.Executable()
 	if err != nil {
