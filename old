@@ -1,7 +1,0 @@
-#!/bin/bash
-cat > /home/pi/.arduino15/packages/arduino/tools/avrdude/6.3.0-arduino17/bin/avrdude <<"EOF"
-#!/bin/sh
-
-
-strace -o "|/home/pi/.arduino15/packages/arduino/tools/avrdude/6.3.0-arduino17/bin/autoreset" -eioctl /home/pi/.arduino15/packages/arduino/tools/avrdude/6.3.0-arduino17/bin/avrdude-original $@
-EOF
