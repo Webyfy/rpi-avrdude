@@ -15,7 +15,6 @@ import (
 const (
 	dtrRequestPattern = `.+TIOCM_DTR.+`
 	exitStatusPattern = `.+exited with.+`
-	pin               = 18
 )
 
 type avrdudeProxy struct {
@@ -67,14 +66,13 @@ func (a avrdudeProxy) watchOutput(cmdReader io.Reader) error {
 		return err
 	}
 
-	pin := 18
 	scanner := bufio.NewScanner(cmdReader)
 	done := false
 	for scanner.Scan() {
 		line := scanner.Bytes()
 		if dtrRegex.Match(line) {
 			if !done {
-				log.Println("avrdude-original: Using autoreset DTR on GPIO Pin ", pin)
+				log.Println("Using autoreset DTR on GPIO Pin ", a.resetPin)
 				a.reset()
 				done = true
 			}
