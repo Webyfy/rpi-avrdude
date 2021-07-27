@@ -7,8 +7,8 @@ import (
 
 // Config represents application configuration
 type Config struct {
-	DefaultPin int    `json:"defaultPin"`
-	Ports      []Port `json:"ports"`
+	DefaultResetPin int    `json:"defaultResetPin"`
+	Ports           []Port `json:"ports"`
 }
 
 // Name defines a port and its reset Pin
