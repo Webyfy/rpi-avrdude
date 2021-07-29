@@ -9,7 +9,7 @@ import (
 	"regexp"
 	"time"
 
-	"git.reach-iot.com/iot-master/rpi-avrdude/gpio"
+	"gitlab.com/reach-iot/rpi-avrdude/gpio"
 )
 
 const (

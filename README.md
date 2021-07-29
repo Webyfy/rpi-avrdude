@@ -4,9 +4,6 @@ Fixing the lack of a DTR pin on the Raspberry Pi for the purposes of uploading h
 
 This project is based on https://github.com/Siytek/avrdude-rpi, which ultimately is based on https://github.com/deanmao/avrdude-rpi (via multiple levels of forking)
 
-## Documentation
-
-Documenation is avaialable [here](git.reach-iot.com/docs/rpi-avrdude)
 
 
 ## References:
