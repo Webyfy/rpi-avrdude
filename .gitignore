@@ -26,3 +26,5 @@
 # Local History for Visual Studio Code
 .history/
 
+# Build directory
+build/

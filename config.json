@@ -1,5 +1,5 @@
 {
-    "defaultResetPin": 7,
+    "defaultResetPin": 18,
     "ports": [
         {
             "name": "/dev/ttyS0",
