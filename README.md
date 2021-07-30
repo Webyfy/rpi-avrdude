@@ -4,7 +4,8 @@ Fixing the lack of a DTR pin on the Raspberry Pi for the purposes of uploading h
 
 This project is based on https://github.com/Siytek/avrdude-rpi, which ultimately is based on https://github.com/deanmao/avrdude-rpi (via multiple levels of forking)
 
-
+## Docs
+For guidance on installation and usage, see the [Wiki](https://gitlab.com/reach-iot/rpi-avrdude/-/wikis/home).
 
 ## References:
 * [HOW TO USE RASPBERRY PI GPIO SERIAL PORT TO PROGRAM ARDUINO](https://siytek.com/raspberry-pi-gpio-arduino/) - _Siytek(Simon)_
